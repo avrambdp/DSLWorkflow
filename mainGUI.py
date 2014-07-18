@@ -6,10 +6,10 @@ from grammar import DSLflow
 from borderlayout import BorderLayout
 from highlighter import DslHighlighter
 
-class DSLFlow(QtGui.QWidget):
+class MainGUI(QtGui.QWidget):
     
     def __init__(self):
-        super(DSLFlow, self).__init__()
+        super(MainGUI, self).__init__()
         
         self.createActions()
         self.createMenuBar()        
@@ -19,6 +19,7 @@ class DSLFlow(QtGui.QWidget):
         self.createUI()
         
         self.workflow = DSLflow()
+        self.deleteImage()
         
     def createUI(self):
                 
@@ -126,30 +127,28 @@ class DSLFlow(QtGui.QWidget):
             QtGui.QMessageBox.No, QtGui.QMessageBox.No)
 
         if reply == QtGui.QMessageBox.Yes:
+            self.deleteImage()
             event.accept()
         else:
             event.ignore() 
     
     def textChanged(self):
-        try:
-            wfProgram = "%s" % self.textEditor.toPlainText()     
-            self.workflow.run(wfProgram)
+        
+        wfProgram = "%s" % self.textEditor.toPlainText()     
+        self.workflow.run(wfProgram)
+        
+        pic_path = os.getcwd() + "\\workflow.png"
+        if os.path.isfile(pic_path):
+            image = QtGui.QImage(pic_path)
+            self.imageLabel.setPixmap(QtGui.QPixmap.fromImage(image))
+            self.scaleFactor = 1.0
+            self.imageLabel.adjustSize()
             
-            pic_path = os.getcwd() + "\\workflow.png"
-            if os.path.isfile(pic_path):
-                image = QtGui.QImage(pic_path)
-                self.imageLabel.setPixmap(QtGui.QPixmap.fromImage(image))
-                self.scaleFactor = 1.0
-                self.imageLabel.adjustSize()
-                
-                self.fitToWindowAct.setEnabled(True)
-                self.updateActions()
+            self.fitToWindowAct.setEnabled(True)
+            self.updateActions()
 
-                if not self.fitToWindowAct.isChecked():
-                    self.imageLabel.adjustSize()
-                    
-        except Exception:
-            print "Program code is not good"
+            if not self.fitToWindowAct.isChecked():
+                self.imageLabel.adjustSize()
     
     def scaleImage(self, factor):
         self.scaleFactor *= factor
@@ -199,9 +198,14 @@ class DSLFlow(QtGui.QWidget):
         if modifiers == QtCore.Qt.ShiftModifier:
             self.wheelEvent()
             
+    def deleteImage(self):
+        pic_path = os.getcwd() + "\\workflow.png"
+        if os.path.isfile(pic_path):
+            os.remove(pic_path)
+            
 def main():    
     app = QtGui.QApplication(sys.argv)
-    _dslFlow = DSLFlow()
+    _mainGUI = MainGUI()
     sys.exit(app.exec_())
     
 if __name__ == '__main__':

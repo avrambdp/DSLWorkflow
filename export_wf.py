@@ -279,10 +279,8 @@ class PWDOTExporter(DOTExporter):
                 self._outf.write('\n%s [label="%s"];\n' % 
                              (key, self.tasks_id_name[str(key)]))
             
-            tasks_end = self.tasks_id
-            
-            # set start process
-            self._outf.write('\nstartProcess->%s\n' % str(self.tasks_id[0])) 
+            tasks_end = list(self.tasks_id)
+            tasks_start = list(self.tasks_id)
             
             # Writing relations between nodes/tasks
             for from_task, to_tasks in self.tasks_rel.items():                               
@@ -304,7 +302,19 @@ class PWDOTExporter(DOTExporter):
                     else:               
                         self._outf.write('\n%s->%s\n' % 
                                      (from_task, to_task))
-                                    
+                        
+                    if to_task in str(tasks_start):
+                        tasks_start.remove(to_task)                 
+                        
+            # set start process
+            if(len(tasks_start)) > 1:
+                self._outf.write('\nnextStartProcess [shape=diamond]\n')
+                self._outf.write('\nstartProcess->nextStartProcess\n')
+                for i in range(len(tasks_start)):  
+                    self._outf.write('\nnextStartProcess->%s\n' % str(tasks_start[i]))
+            else:
+                self._outf.write('\nstartProcess->%s\n' % str(tasks_start[0]))                        
+                       
             # set end process         
             for i in range(len(tasks_end)):
                 self._outf.write('\nendProcess%s [shape=circle, penwidth=3]\n' % str(i))

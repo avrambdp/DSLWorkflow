@@ -1,12 +1,12 @@
 from arpeggio import ZeroOrMore, Kwd, Optional, RegExMatch as _, ParserPython, \
-    SemanticAction
+    SemanticAction, OneOrMore, EndOfFile
 from arpeggio.export import PMDOTExporter
 from export_wf import PWDOTExporter
 import pydot
 
-def workflow():         return ZeroOrMore(task)
+def workflow():         return OneOrMore(task), EndOfFile
 def task():             return Kwd('task'), name, open_bracket, ZeroOrMore(nextTask), ZeroOrMore(grType), ZeroOrMore(endTime), ZeroOrMore(exitCondition), close_bracket
-def nextTask():         return Kwd('next'), colon, ZeroOrMore(name, Optional(comma)), semicomma
+def nextTask():         return Kwd('next'), colon, OneOrMore(name, Optional(comma)), semicomma
 def grType():           return Kwd('type'), colon, [Kwd('automatic'), Kwd('manual')], semicomma
 def endTime():          return Kwd('endTime'), colon, number, "H", semicomma
 def exitCondition():    return Kwd('exitCondition'), colon, [name, "None"], semicomma
@@ -26,51 +26,13 @@ class DSLflow():
     def __init__(self):
         self.parser = ParserPython(workflow, debug=True)
         
-    def run(self, input_workflow):        
-                    
-        parse_tree = self.parser.parse(input_workflow)    
-        
-        PWDOTExporter().exportFile(parse_tree, "workflow.dot")
-    
-        graph = pydot.graph_from_dot_file('workflow.dot')
-        
-        graph.write_png('workflow.png')
+    def run(self, input_workflow):                        
+        try:            
+            parse_tree = self.parser.parse(input_workflow)                
+            PWDOTExporter().exportFile(parse_tree, "workflow.dot")        
+            graph = pydot.graph_from_dot_file('workflow.dot')            
+            graph.write_png('workflow.png')
+            
+        except Exception:
+            print "Language error..."
 
-if __name__ == "__main__":
-    
-    input_workflow = '''
-    
-               task One (
-                    next: Two, Tree;
-                    type: automatic;
-                    endTime: 32H;
-                    exitCondition: None;
-               )
-               
-               task Two (
-                   exitCondition: Tree;
-               )      
-               
-               task Tree (
-                   next: Two;
-                   exitCondition: One;
-               )          
-                         
-               
-            '''
-    
-    parser = ParserPython(workflow, debug=True)
-    
-    PMDOTExporter().exportFile(parser.parser_model, "workflow_model.dot")
-
-    parse_tree = parser.parse(input_workflow)
-
-    # PTDOTExporter().exportFile(parse_tree, "workflow_tree.dot")
-
-    PWDOTExporter().exportFile(parse_tree, "wokrflow.dot")
-    
-    print "----------------"
-        
-    print parser.getASG()
-    
-    
