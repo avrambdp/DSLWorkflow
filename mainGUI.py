@@ -1,7 +1,7 @@
 import sys
 import os
 
-from PyQt4 import QtGui, QtCore 
+from PyQt4 import QtGui, QtCore, Qt
 from grammar import DSLflow
 from borderlayout import BorderLayout
 from highlighter import DslHighlighter
@@ -47,12 +47,15 @@ class MainGUI(QtGui.QWidget):
         self.imageLabel.setSizePolicy(QtGui.QSizePolicy.Ignored,
                 QtGui.QSizePolicy.Ignored)
         self.imageLabel.setScaledContents(True)
-                
+
         self.scrollAreaViewer = QtGui.QScrollArea(self)
         self.scrollAreaViewer.setBackgroundRole(QtGui.QPalette.Light)
         self.scrollAreaViewer.setAlignment(QtCore.Qt.AlignCenter)
         self.scrollAreaViewer.setWidget(self.imageLabel) 
         
+        #ignore wheel event
+        self.scrollAreaViewer.wheelEvent = lambda event: event.ignore()
+
     def createEditor(self):
         self.textEditor = QtGui.QTextEdit()
         self.textEditor.textChanged.connect(self.textChanged)
@@ -135,7 +138,7 @@ class MainGUI(QtGui.QWidget):
     def textChanged(self):
         
         wfProgram = "%s" % self.textEditor.toPlainText()     
-        self.workflow.run(wfProgram)
+        self.workflow.create(wfProgram)
         
         pic_path = os.getcwd() + "\\workflow.png"
         if os.path.isfile(pic_path):
@@ -149,7 +152,7 @@ class MainGUI(QtGui.QWidget):
 
             if not self.fitToWindowAct.isChecked():
                 self.imageLabel.adjustSize()
-    
+                
     def scaleImage(self, factor):
         self.scaleFactor *= factor
         self.imageLabel.resize(self.scaleFactor * self.imageLabel.pixmap().size())
@@ -202,7 +205,7 @@ class MainGUI(QtGui.QWidget):
         pic_path = os.getcwd() + "\\workflow.png"
         if os.path.isfile(pic_path):
             os.remove(pic_path)
-            
+
 def main():    
     app = QtGui.QApplication(sys.argv)
     _mainGUI = MainGUI()

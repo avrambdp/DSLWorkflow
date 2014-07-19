@@ -18,15 +18,14 @@ def open_bracket():     return '('
 def close_bracket():    return ')'
 def colon():            return ':'
 def comma():            return ','
-def semicomma():        return ';'
-
-
+def semicomma():        return ';'   
+    
 class DSLflow():
     
     def __init__(self):
         self.parser = ParserPython(workflow, debug=True)
         
-    def run(self, input_workflow):                        
+    def create(self, input_workflow):                        
         try:            
             parse_tree = self.parser.parse(input_workflow)                
             PWDOTExporter().exportFile(parse_tree, "workflow.dot")        
@@ -35,4 +34,3 @@ class DSLflow():
             
         except Exception:
             print "Language error..."
-
