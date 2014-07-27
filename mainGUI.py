@@ -53,7 +53,7 @@ class MainGUI(QtGui.QWidget):
         self.scrollAreaViewer.setAlignment(QtCore.Qt.AlignCenter)
         self.scrollAreaViewer.setWidget(self.imageLabel) 
         
-        #ignore wheel event
+        # ignore wheel event
         self.scrollAreaViewer.wheelEvent = lambda event: event.ignore()
 
     def createEditor(self):
@@ -89,7 +89,7 @@ class MainGUI(QtGui.QWidget):
         self.viewMenu.addAction(self.zoomOutAct)
         self.viewMenu.addAction(self.normalSizeAct)
         self.viewMenu.addAction(self.fitToWindowAct)
-        
+
         self.helpMenu = QtGui.QMenu('Help')
         self.helpMenu.addAction('Help content')
         self.helpMenu.addAction('About')
@@ -97,9 +97,13 @@ class MainGUI(QtGui.QWidget):
         self.menubar.addMenu(self.fileMenu)
         self.menubar.addMenu(self.searchtMenu)
         self.menubar.addMenu(self.viewMenu)
+        self.menubar.addAction(self.runAct)
         self.menubar.addMenu(self.helpMenu)
         
     def createActions(self):
+        
+        self.runAct = QtGui.QAction("Run", self,
+                shortcut="Ctrl+R", enabled=True, triggered=self.run)
         
         self.zoomInAct = QtGui.QAction("Zoom &In (25%)", self,
                 shortcut="Ctrl++", enabled=False, triggered=self.zoomIn)
@@ -136,10 +140,10 @@ class MainGUI(QtGui.QWidget):
             event.ignore() 
     
     def textChanged(self):
-        
+                
         wfProgram = "%s" % self.textEditor.toPlainText()     
         self.workflow.create(wfProgram)
-        
+                
         pic_path = os.getcwd() + "\\workflow.png"
         if os.path.isfile(pic_path):
             image = QtGui.QImage(pic_path)
@@ -152,6 +156,7 @@ class MainGUI(QtGui.QWidget):
 
             if not self.fitToWindowAct.isChecked():
                 self.imageLabel.adjustSize()
+                
                 
     def scaleImage(self, factor):
         self.scaleFactor *= factor
@@ -188,23 +193,21 @@ class MainGUI(QtGui.QWidget):
         
     def adjustScrollBar(self, scrollBar, factor):
         scrollBar.setValue(int(factor * scrollBar.value()
-                                + ((factor - 1) * scrollBar.pageStep()/2)))
+                                + ((factor - 1) * scrollBar.pageStep() / 2)))
                
-    def wheelEvent(self,event):
+    def wheelEvent(self, event):
             if event.delta() > 0:
                 self.zoomIn()
             else:
                 self.zoomOut()        
             
-    def handleButton(self):
-        modifiers = QtGui.QApplication.keyboardModifiers()
-        if modifiers == QtCore.Qt.ShiftModifier:
-            self.wheelEvent()
-            
     def deleteImage(self):
         pic_path = os.getcwd() + "\\workflow.png"
         if os.path.isfile(pic_path):
             os.remove(pic_path)
+            
+    def run(self):
+        self.workflow.run()
 
 def main():    
     app = QtGui.QApplication(sys.argv)

@@ -227,7 +227,7 @@ class PWDOTExporter(DOTExporter):
         self.tasks_rel = {}  # Used as dictionary for storing relations between tasks, as key value pairs (to task id, from task id)
         self.tasks_end = []  # Used for storing tasks that ends process
         
-        self.parent_task_rendering = None  # If true parent task name rendering, if false task name rendering        
+        self.next_task_rendering = None  # If true parent task name rendering, if false task name rendering        
         self.exit_condition_rendering = False
         self._rendering_node(node)   
                         
@@ -241,11 +241,11 @@ class PWDOTExporter(DOTExporter):
                         
             if(node.desc.startswith('task')):             
                 self.tasks_id.append(str(node.id))                                
-                self.parent_task_rendering = False
-                self.exit_condition_rendering = False
+                self.next_task_rendering = False
+                self.no_task_rendering = False
                 
             if(node.desc.startswith('name')):    
-                if not (self.exit_condition_rendering):     
+                if not (self.no_task_rendering):     
                         
                     first_index = (node.desc).index('\'') + 1
                     last_index = (node.desc).rindex('\'')
@@ -253,16 +253,16 @@ class PWDOTExporter(DOTExporter):
                     task_name = node.desc[first_index:last_index]
                     task_id = str(self.tasks_id[-1])
                     
-                    if(self.parent_task_rendering):        
+                    if(self.next_task_rendering):        
                         self.tasks_rel.setdefault(task_id, []).append(task_name)      
                     else:
                         self.tasks_id_name[task_id] = task_name
             
             if(node.desc.startswith('next')):                 
-                self.parent_task_rendering = True  
+                self.next_task_rendering = True  
                             
-            if(node.desc.startswith('exitCondition')):     
-                self.exit_condition_rendering = True              
+            if(node.desc.startswith('exitCondition') or node.desc.startswith('workflow')):     
+                self.no_task_rendering = True              
                 
             for _, n in node.neighbours:
                 self._rendering_node(n)
