@@ -5,6 +5,7 @@ from PyQt4 import QtGui, QtCore, Qt
 from grammar import DSLflow
 from borderlayout import BorderLayout
 from highlighter import DslHighlighter
+from PyQt4.QtGui import QMessageBox
 
 class MainGUI(QtGui.QWidget):
     
@@ -97,13 +98,13 @@ class MainGUI(QtGui.QWidget):
         self.menubar.addMenu(self.fileMenu)
         self.menubar.addMenu(self.searchtMenu)
         self.menubar.addMenu(self.viewMenu)
-        self.menubar.addAction(self.runAct)
+        self.menubar.addAction(self.uploadAct)
         self.menubar.addMenu(self.helpMenu)
         
     def createActions(self):
         
-        self.runAct = QtGui.QAction("Run", self,
-                shortcut="Ctrl+R", enabled=True, triggered=self.run)
+        self.uploadAct = QtGui.QAction("Upload", self,
+                shortcut="Ctrl+U", enabled=True, triggered=self.upload)
         
         self.zoomInAct = QtGui.QAction("Zoom &In (25%)", self,
                 shortcut="Ctrl++", enabled=False, triggered=self.zoomIn)
@@ -206,8 +207,14 @@ class MainGUI(QtGui.QWidget):
         if os.path.isfile(pic_path):
             os.remove(pic_path)
             
-    def run(self):
-        self.workflow.run()
+    def upload(self):
+        model = "%s" % self.textEditor.toPlainText()
+        successfull = self.workflow.upload(model)
+        
+        if(successfull):
+            QtGui.QMessageBox.information(self, "Upload", "File successfully uploaded", QMessageBox.Ok, QMessageBox.Ok)
+        else:
+            QtGui.QMessageBox.warning(self, "Upload", "File successfully uploaded", QMessageBox.Ok, QMessageBox.Ok)
 
 def main():    
     app = QtGui.QApplication(sys.argv)
