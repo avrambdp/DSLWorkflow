@@ -227,8 +227,10 @@ class PWDOTExporter(DOTExporter):
         self.tasks_rel = {}  # Used as dictionary for storing relations between tasks, as key value pairs (to task id, from task id)
         self.tasks_end = []  # Used for storing tasks that ends process
         
-        self.next_task_rendering = None  # If true parent task name rendering, if false task name rendering        
-        self.exit_condition_rendering = False
+        self.next_task_rendering = False  # If true parent task name rendering, if false task name rendering        
+        self.task_rendering = False
+        self.role_rendering = False
+        
         self._rendering_node(node)   
                         
         self._creating_diagram()
@@ -242,10 +244,11 @@ class PWDOTExporter(DOTExporter):
             if(node.desc.startswith('task')):             
                 self.tasks_id.append(str(node.id))                                
                 self.next_task_rendering = False
-                self.no_task_rendering = False
-                
-            if(node.desc.startswith('name')):    
-                if not (self.no_task_rendering):     
+                self.task_rendering = True
+                self.role_rendering = False
+            
+            if(node.desc.startswith('name')):                
+                if self.task_rendering and not (self.role_rendering):     
                         
                     first_index = (node.desc).index('\'') + 1
                     last_index = (node.desc).rindex('\'')
@@ -253,22 +256,32 @@ class PWDOTExporter(DOTExporter):
                     task_name = node.desc[first_index:last_index]
                     task_id = str(self.tasks_id[-1])
                     
-                    if(self.next_task_rendering):        
+                    if(self.next_task_rendering): 
                         self.tasks_rel.setdefault(task_id, []).append(task_name)      
                     else:
                         self.tasks_id_name[task_id] = task_name
-            
+          
             if(node.desc.startswith('next')):                 
                 self.next_task_rendering = True  
-                            
-            if(node.desc.startswith('exitCondition') or node.desc.startswith('workflow')):     
-                self.no_task_rendering = True              
+                self.role_rendering = False
                 
+            if(node.desc.startswith('exitCondition') or node.desc.startswith('workflow')):     
+                self.task_rendering = False              
+            
+            if(node.desc.startswith('role')):
+               self.role_rendering = True
+            
             for _, n in node.neighbours:
                 self._rendering_node(n)
                 
     def _creating_diagram(self):                
+                 
+            print "ID NAMES:"
+            print self.tasks_id_name
                 
+            print "TASK RELATIONS:"
+            print self.tasks_rel
+            
             # Replacing names with id's
             for key, name in self.tasks_id_name.items():
                 for from_id, to_ids in self.tasks_rel.items():        
@@ -294,7 +307,8 @@ class PWDOTExporter(DOTExporter):
                     self._outf.write('\n%s->next%s\n' % 
                                      (from_task, from_task))
                     gateway = True
-                
+                                
+                #print "1:" + str(to_tasks)
                 for to_task in to_tasks: 
                     if gateway:                        
                         self._outf.write('\nnext%s->%s\n' % 
@@ -303,6 +317,9 @@ class PWDOTExporter(DOTExporter):
                         self._outf.write('\n%s->%s\n' % 
                                      (from_task, to_task))
                         
+                    #print "2:" + str(tasks_start)
+                    #print "3:" + str(to_task)
+                    
                     if to_task in str(tasks_start):
                         tasks_start.remove(to_task)                 
                         

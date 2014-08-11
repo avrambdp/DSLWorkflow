@@ -12,11 +12,11 @@ class DslHighlighter(QSyntaxHighlighter):
         self.highlightingRules = []
         
         self.brush = QBrush(Qt.red, Qt.SolidPattern)              
-        self.keywords = QStringList([ 'task' ])        
+        self.keywords = QStringList([ 'task' , 'workflow'])        
         self.themeWords()
         
         self.brush = QBrush(Qt.blue, Qt.SolidPattern)              
-        self.keywords = QStringList([ 'next', 'endTime', 'exitCondition', 'type' ])
+        self.keywords = QStringList([ 'next', 'deadline', 'exitCondition', 'type', 'description', 'role' ])
         self.themeWords()
         
         self.brush = QBrush(Qt.black, Qt.SolidPattern)              
