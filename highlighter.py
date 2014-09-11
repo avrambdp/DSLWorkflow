@@ -23,6 +23,10 @@ class DslHighlighter(QSyntaxHighlighter):
         self.keywords = QStringList([ 'automatic', 'manual'])
         self.themeWords(True)
 
+        self.brush = QBrush(Qt.black, Qt.SolidPattern)              
+        self.keywords = QStringList(['quote'])
+        self.themeWords(True)
+
     def themeWords(self, italic = False):
              
         keyword = QTextCharFormat()     
@@ -34,7 +38,11 @@ class DslHighlighter(QSyntaxHighlighter):
             keyword.setFontWeight(QFont.Bold)
         
         for word in self.keywords:
-            pattern = QRegExp("\\b" + word + "\\b")
+            if (word == "quote"):
+                pattern = QRegExp("\"[\w\s]+\"")
+            else:
+                pattern = QRegExp("\\b" + word + "\\b")
+                
             rule = HighlightingRule(pattern, keyword)
             self.highlightingRules.append(rule)
             
